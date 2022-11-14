@@ -42,10 +42,23 @@ io.listen(3306);
   io.emit('new message');
 }, 3000);*/
 
-var gpio = require('../rpi-gpio');
+/*var gpio = require('rpi-gpio');
 
 gpio.on('change', function(channel, value) {
   console.log('Channel ' + channel + ' value is now ' + value);
   io.emit('PIN changed');
 });
 gpio.setup(17, gpio.DIR_IN, gpio.EDGE_BOTH);
+ */
+const Gpio = require('onoff').Gpio;
+const button1 = new Gpio(11, 'in', 'both');
+const button2 = new Gpio(17, 'in', 'both');
+button1.watch((err, value) => {
+  console.log('Button1 value is now ' + value);
+  io.emit('PIN changed');
+});
+
+button2.watch((err, value) => {
+  console.log('Button1 value is now ' + value);
+  io.emit('PIN changed');
+});
