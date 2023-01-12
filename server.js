@@ -32,33 +32,73 @@ const io = require('socket.io')(server, {
 
 io.on("connection", (socket) => {
   console.dir(socket);
-  console.log('new user connection:' + socket.id)
-  socket.join('app')
-
+  console.log('new user connection:' + socket.id);
+  socket.join('app');
 });
 
 io.listen(3306);
-/*setInterval(()=> {
+/*
+setInterval(()=> {
+  io.emit('start scan')
   io.emit('new message');
-}, 3000);*/
-
-/*var gpio = require('rpi-gpio');
+}, 3000);
+var gpio = require('rpi-gpio');
 
 gpio.on('change', function(channel, value) {
   console.log('Channel ' + channel + ' value is now ' + value);
   io.emit('PIN changed');
 });
 gpio.setup(17, gpio.DIR_IN, gpio.EDGE_BOTH);
- */
+*/
+
+let isButtonPress = false;
 const Gpio = require('onoff').Gpio;
 const button1 = new Gpio(11, 'in', 'both');
 const button2 = new Gpio(17, 'in', 'both');
+
 button1.watch((err, value) => {
-  console.log('Button1 value is now ' + value);
-  io.emit('PIN changed');
+  if (!isButtonPress && value) {
+    isButtonPress = true;
+    console.log('Button1 value is now ' + value);
+    io.emit('start scan');
+    setTimeout(() => {
+      isButtonPress = false;
+    }, 1000);
+  }
 });
 
 button2.watch((err, value) => {
-  console.log('Button1 value is now ' + value);
-  io.emit('PIN changed');
+  if (!isButtonPress && value) {
+    isButtonPress = true;
+    console.log('Button2 value is now ' + value);
+    io.emit('start scan');
+    setTimeout(() => {
+      isButtonPress = false;
+    }, 1000);
+  }
 });
+
+//import { usb, getDeviceList } from 'usb';
+const { getDeviceList, bindings, webusb} = require('usb/dist/usb');
+const usb = require('usb/dist/usb');
+const WebUSBDevice  = require('usb/dist/webusb/');
+
+const devices = getDeviceList();
+
+// console.dir(devices)
+usb.on('attach', function (device) {
+  console.dir(device)
+})
+/*
+(async () => {
+  // Returns first matching device
+  const webUsb = new WebUSBDevice.WebUSB()
+  const device = await webUsb.requestDevice({
+    filters: [{}]
+  })
+
+  if (device) {
+    console.log(device); // WebUSB device
+  }
+})();
+*/
